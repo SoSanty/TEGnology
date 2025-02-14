@@ -26,7 +26,7 @@ app.layout = html.Div([
 )
 def update_temperature(n):
     try:
-        response = requests.get("http://localhost:5000/latest-temperature", timeout=1)
+        response = requests.get("http://localhost:9000/latest-temperature", timeout=1)
         if response.status_code == 200:
             data = response.json()
             return f"Device: {data['device_id']} - Temperature: {data['temperature']}°C"

@@ -25,4 +25,4 @@ def get_latest_temperature():
     return jsonify({"status": "error", "message": "No data available"}), 404
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=9000, debug=True)

@@ -2,3 +2,4 @@ bleak
 flask
 dash
 requests
+setuptools

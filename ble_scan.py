@@ -5,29 +5,10 @@ from bleak.backends.scanner import AdvertisementData
 from bleak import BleakScanner
 
 # Flask API endpoint
-API_URL = "http://localhost:5000/temperature"
-
-# Function to scan and display available devices
-async def list_available_devices():
-    devices = await BleakScanner.discover()
-    print("Available BLE Devices:")
-    for idx, device in enumerate(devices):
-        print(f"{idx + 1}. {device.address} - {device.name}")
-    
-    try:
-        selected_index = int(input("Enter the number of the sensor you want to monitor: ")) - 1
-        selected_device = devices[selected_index]
-        print(f"Selected Device: {selected_device.address} - {selected_device.name}")
-        return selected_device.address
-    except (ValueError, IndexError):
-        print("Invalid selection. Exiting.")
-        return None
+API_URL = "http://localhost:9000/temperature"
 
 # Callback function for BLE device data
-def ble_signal_callback(device: BLEDevice, advertisement_data: AdvertisementData, target_mac_address):
-    if device.address != target_mac_address:
-        return
-
+def ble_signal_callback(device: BLEDevice, advertisement_data: AdvertisementData):
     try:
         if advertisement_data.manufacturer_data:
             data = next(iter(advertisement_data.manufacturer_data.values()))
@@ -52,8 +33,8 @@ def ble_signal_callback(device: BLEDevice, advertisement_data: AdvertisementData
         print(f"Error processing data for {device.address}: {e}")
 
 # BLE scanning function
-async def ble_scan(target_mac_address):
-    scanner = BleakScanner(lambda device, adv_data: ble_signal_callback(device, adv_data, target_mac_address))
+async def ble_scan():
+    scanner = BleakScanner(ble_signal_callback)
 
     while True:
         try:
@@ -68,11 +49,5 @@ async def ble_scan(target_mac_address):
         except Exception as e:
             print(f"Error stopping scanner: {e}")
 
-# Main function
-async def main():
-    selected_mac_address = await list_available_devices()
-    if selected_mac_address:
-        await ble_scan(selected_mac_address)
-
 # Run the main function
-asyncio.run(main())
+asyncio.run(ble_scan())

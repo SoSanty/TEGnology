@@ -1,9 +1,11 @@
 #!/bin/bash
 
+# Change to the directory where the script is located
+cd "$(dirname "$0")"
+
 # Update package list and install dependencies
-echo "Updating system and installing necessary packages..."
 sudo apt-get update -y
-sudo apt-get install -y python3-pip python3-dev python3-venv libbluetooth-dev
+sudo apt-get install -y python3-pip python3-dev python3-venv
 
 # Activate virtual environment if exists, otherwise create one
 if [ ! -d "venv" ]; then
@@ -16,14 +18,15 @@ else
     source venv/bin/activate
 fi
 
-# Run the Flask API in the background
-echo "Starting Flask API..."
-nohup python3 flask_api.py > flask_api.log 2>&1 &
+# Create the Logs directory if it doesn't exist
+mkdir -p logs/output
+mkdir -p logs/errors
 
-# Run the BLE Scanner in the background
-echo "Starting BLE Scanner..."
-nohup python3 ble_scan.py > ble_scan.log 2>&1 &
+# Run the Flask API in the background and separate stdout and stderr
+nohup python3 flask_api.py > Logs/output/flask_api.log 2> Logs/errors/flask_api_errors.log &
 
-# Run the Dash App
-echo "Starting Dash App..."
+# Run the BLE Scanner in the background and separate stdout and stderr
+nohup python3 ble_scan.py > Logs/output/ble_scan.log 2> Logs/errors/ble_scan_errors.log &
+
+# Run the Dash App (stdout and stderr are combined here in the same log file)
 python3 dash_app.py
