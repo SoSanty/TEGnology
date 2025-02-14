@@ -2,3 +2,5 @@ bleak
 flask
 dash
 requests
+setuptools
+dash-bootstrap-components
