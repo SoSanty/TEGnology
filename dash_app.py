@@ -17,7 +17,7 @@ temperature_data = pd.DataFrame(columns=["time", "temperature"])
 # App layout
 app.layout = dbc.Container([
     dbc.Row([
-        dbc.Col(html.H1("Industrial Temperature Monitoring", className="text-center mt-4"), width=12)
+        dbc.Col(html.H1("SensEver Temperature", className="text-center mt-4"), width=12)
     ]),
 
     # Real-time Temperature Display
@@ -54,8 +54,55 @@ app.layout = dbc.Container([
         id='interval-component',
         interval=5000,  # Update every 5 seconds
         n_intervals=0
-    )
+    ),
+        # Button to trigger the customization modal
+    dbc.Row([
+        dbc.Col(
+            dbc.Button("Customize Settings", id="open-settings", color="primary", className="mt-4", size="lg"),
+            width={"size": 6, "offset": 3}
+        )
+    ]),
+
+    # Modal for customization settings
+    dbc.Modal([
+        dbc.ModalHeader("Customize Settings"),
+        dbc.ModalBody([
+            # Font Size Adjustment Slider
+            html.Label("Select Font Size for Title:"),
+            dcc.Slider(
+                id='font-size-slider',
+                min=10,
+                max=50,
+                step=2,
+                value=30,  # Default value
+                marks={i: f"{i}" for i in range(10, 51, 5)}
+            ),
+            # You can add more customization controls here (e.g., temperature thresholds, colors)
+        ]),
+        dbc.ModalFooter([
+            dbc.Button("Close", id="close-settings", className="ml-auto")
+        ])
+    ], id="settings-modal", is_open=False),
 ], fluid=True)
+
+# Callback to open the modal
+@app.callback(
+    Output("settings-modal", "is_open"),
+    [Input("open-settings", "n_clicks"), Input("close-settings", "n_clicks")],
+    [State("settings-modal", "is_open")]
+)
+def toggle_modal(open_click, close_click, is_open):
+    if open_click or close_click:
+        return not is_open
+    return is_open
+
+# Callback to update font size for the first row
+@app.callback(
+    Output('main-title', 'style'),
+    Input('font-size-slider', 'value')
+)
+def update_font_size(font_size):
+    return {'fontSize': f'{font_size}px', 'textAlign': 'center'}
 
 # Callback to fetch and update temperature data
 @app.callback(

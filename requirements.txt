@@ -4,3 +4,4 @@ dash
 requests
 setuptools
 dash-bootstrap-components
+pandas
