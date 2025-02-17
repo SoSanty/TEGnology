@@ -5,3 +5,4 @@ requests
 setuptools
 dash-bootstrap-components
 pandas
+plotly
