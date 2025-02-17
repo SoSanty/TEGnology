@@ -7,102 +7,59 @@ import pandas as pd
 import requests
 from datetime import datetime, timedelta
 
-
 # Initialize Dash app with Bootstrap theme
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
+
+color_options = [
+    {'label': 'Black', 'value': '#000000'},
+    {'label': 'Red', 'value': '#FF0000'},
+    {'label': 'Green', 'value': '#008000'},
+    {'label': 'Blue', 'value': '#0000FF'},
+    {'label': 'White', 'value': '#FFFFFF'},
+    {'label': 'Yellow', 'value': '#FFFF00'}
+]
 
 # Store temperature data
 temperature_data = pd.DataFrame(columns=["time", "temperature"])
 
+# Sidebar layout
+sidebar = html.Div([
+    html.H4("Customize Chart", className="mb-3"),
+    html.Label("Chart Time Range (minutes)"),
+    dcc.Slider(id='chart-time-slider', min=5, max=60, step=5, value=20,
+               marks={i: f"{i} min" for i in range(5, 61, 5)}),
+    html.Br(),
+    html.Label("Select Chart Color:"),
+    dcc.Dropdown(id="chart-color", options=[
+        {"label": "Blue", "value": "blue"},
+        {"label": "Red", "value": "red"},
+        {"label": "Green", "value": "green"},
+        {"label": "Orange", "value": "orange"}
+    ], value="blue"),
+    html.Br(),
+    html.Label("Temperature Warning Threshold (°C):"),
+    dcc.Input(id="threshold", type="number", value=75, step=1),
+    html.Br(),
+    html.Br()
+], style={"width": "300px", "padding": "20px", "position": "fixed", "top": 0, "bottom": 0, "backgroundColor": "#f8f9fa", "overflowY": "auto"})
+
 # App layout
 app.layout = dbc.Container([
     dbc.Row([
-        dbc.Col(html.H1("SensEver Temperature", className="text-center mt-4"), width=12)
-    ]),
+        dbc.Col(html.Div([sidebar], id="sidebar-container"), width=3),
+        dbc.Col(html.H1("SensEver HSI-BLE", id='main-title'), className="text-center", width={"size": 6, "offset": 1}),
+    ], className="align-items-center mt-3 d-flex"),
 
     # Real-time Temperature Display
-    dbc.Row([
-        dbc.Col(html.Div(id='temperature-display', className="display-4 text-center mt-3"), width=12)
-    ]),
-
-    # Customization Options
-    dbc.Row([
-        dbc.Col([
-            html.Label("Select Chart Color:"),
-            dcc.Dropdown(
-                id="chart-color",
-                options=[
-                    {"label": "Blue", "value": "blue"},
-                    {"label": "Red", "value": "red"},
-                    {"label": "Green", "value": "green"},
-                    {"label": "Orange", "value": "orange"}
-                ],
-                value="blue"
-            ),
-            html.Label("Temperature Threshold (°C):"),
-            dcc.Input(id="threshold", type="number", value=75, step=1),
-        ], width=4)
-    ], className="mt-3"),
+    dbc.Row([dbc.Col(html.Div(id='temperature-display', className="display-4 text-center mt-3"), width={"size": 9, "offset": 3})]),
 
     # Real-time Chart
-    dbc.Row([
-        dbc.Col(dcc.Graph(id="temperature-graph"), width=12)
-    ]),
+    dbc.Row([dbc.Col(dcc.Graph(id="temperature-graph"), width={"size": 9, "offset": 3})]),
 
     # Interval component for updates
-    dcc.Interval(
-        id='interval-component',
-        interval=5000,  # Update every 5 seconds
-        n_intervals=0
-    ),
-        # Button to trigger the customization modal
-    dbc.Row([
-        dbc.Col(
-            dbc.Button("Customize Settings", id="open-settings", color="primary", className="mt-4", size="lg"),
-            width={"size": 6, "offset": 3}
-        )
-    ]),
+    dcc.Interval(id='interval-component', interval=5000, n_intervals=0),
 
-    # Modal for customization settings
-    dbc.Modal([
-        dbc.ModalHeader("Customize Settings"),
-        dbc.ModalBody([
-            # Font Size Adjustment Slider
-            html.Label("Select Font Size for Title:"),
-            dcc.Slider(
-                id='font-size-slider',
-                min=10,
-                max=50,
-                step=2,
-                value=30,  # Default value
-                marks={i: f"{i}" for i in range(10, 51, 5)}
-            ),
-            # You can add more customization controls here (e.g., temperature thresholds, colors)
-        ]),
-        dbc.ModalFooter([
-            dbc.Button("Close", id="close-settings", className="ml-auto")
-        ])
-    ], id="settings-modal", is_open=False),
 ], fluid=True)
-
-# Callback to open the modal
-@app.callback(
-    Output("settings-modal", "is_open"),
-    [Input("open-settings", "n_clicks"), Input("close-settings", "n_clicks")],
-    [State("settings-modal", "is_open")]
-)
-def toggle_modal(open_click, close_click, is_open):
-    if open_click or close_click:
-        return not is_open
-    return is_open
-
-# Callback to update font size for the first row
-@app.callback(
-    Output('main-title', 'style'),
-    Input('font-size-slider', 'value')
-)
-def update_font_size(font_size):
-    return {'fontSize': f'{font_size}px', 'textAlign': 'center'}
 
 # Callback to fetch and update temperature data
 @app.callback(
@@ -117,6 +74,7 @@ def update_temperature(n, color, threshold):
 
     try:
         response = requests.get("http://localhost:9000/latest-temperature", timeout=1)
+        print(response)
         if response.status_code == 200:
             data = response.json()
             current_time = datetime.now()
@@ -161,7 +119,7 @@ def update_temperature(n, color, threshold):
                 xaxis_title="Time",
                 yaxis_title="Temperature (°C)",
                 xaxis=dict(tickformat="%H:%M:%S"),
-                template="plotly_dark"
+                template="lux"
             )
 
             return display_text, fig
