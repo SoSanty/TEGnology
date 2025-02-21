@@ -6,3 +6,4 @@ setuptools
 dash-bootstrap-components
 pandas
 plotly
+httpx

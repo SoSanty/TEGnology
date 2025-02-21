@@ -5,6 +5,39 @@ app = Flask(__name__)
 # In-memory storage for temperature data
 temperature_data = []
 
+REGISTERED_DEVICES = {}  # Store discovered devices
+SELECTED_DEVICE = None  # Store user's selected MAC address
+
+@app.route("/register_devices", methods=["POST"])
+def register_devices():
+    global REGISTERED_DEVICES
+    devices = request.json
+
+    REGISTERED_DEVICES = {device["mac"]: device["name"] for device in devices}
+    return jsonify({"message": "Devices registered", "devices": REGISTERED_DEVICES}), 200
+
+@app.route("/get_devices", methods=["GET"])
+def get_devices():
+    return jsonify(REGISTERED_DEVICES), 200
+
+@app.route("/select_device", methods=["POST"])
+def select_device():
+    global SELECTED_DEVICE
+    data = request.json
+    mac_address = data.get("mac")
+
+    if mac_address in REGISTERED_DEVICES:
+        SELECTED_DEVICE = mac_address
+        return jsonify({"message": f"Device {mac_address} selected"}), 200
+    else:
+        return jsonify({"error": "MAC address not found"}), 400
+
+@app.route("/get_selected_device", methods=["GET"])
+def get_selected_device():
+    if SELECTED_DEVICE:
+        return jsonify({"selected_mac": SELECTED_DEVICE}), 200
+    return jsonify({"error": "No device selected"}), 400
+
 # Endpoint to receive temperature data from ble_scan.py
 @app.route('/temperature', methods=['POST'])
 def receive_temperature():
