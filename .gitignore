@@ -2,6 +2,10 @@
 venv/
 .venv/
 
+# Ignore json files
+*.json
+json/
+
 # Ignore log files
 *.log
 logs/

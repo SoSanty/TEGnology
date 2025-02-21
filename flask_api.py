@@ -14,6 +14,7 @@ def register_devices():
     devices = request.json
 
     REGISTERED_DEVICES = {device["mac"]: device["name"] for device in devices}
+    print(f"Devices registered:{REGISTERED_DEVICES}")
     return jsonify({"message": "Devices registered", "devices": REGISTERED_DEVICES}), 200
 
 @app.route("/get_devices", methods=["GET"])

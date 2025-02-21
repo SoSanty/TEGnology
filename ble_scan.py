@@ -6,7 +6,7 @@ from bleak import BleakScanner
 import requests
 
 # Flask API endpoint
-DEVICES_API_URL = "http://localhost:5000/register_devices"  # For sending MAC addresses
+DEVICES_API_URL = "http://localhost:9000/register_devices"  # For sending MAC addresses
 TEMP_API_URL = "http://localhost:9000/temperature"
 
 # Global variable to store scanned devices
@@ -17,7 +17,7 @@ scanned_devices_lock = asyncio.Lock()
 async def ble_signal_callback(device: BLEDevice, advertisement_data: AdvertisementData):
     try:
         if advertisement_data.manufacturer_data:
-            data = next(advertisement_data.manufacturer_data.values())
+            data = next(iter(advertisement_data.manufacturer_data.values()))
             bytes_data = list(data)
             
             if len(bytes_data) != 10:
